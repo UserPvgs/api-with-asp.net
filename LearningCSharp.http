@@ -1,0 +1,6 @@
+@LearningCSharp_HostAddress = http://localhost:5029
+
+GET {{LearningCSharp_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
