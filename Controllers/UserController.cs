@@ -1,4 +1,5 @@
 using Data.ApplicationDbContext;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Services.Cypher;
@@ -59,5 +60,5 @@ public class UserController : ControllerBase {
             return new JsonResult(true);
         }
         return BadRequest("User not created");
-    } 
+    }
 }

@@ -21,7 +21,7 @@ namespace Services.Tokens{
             var token = tokenHandler.CreateToken(descriptToken);
             return tokenHandler.WriteToken(token);
         }
-        public IActionResult getInfoTokenToUser(string token, IConfiguration configuration){
+        public string getInfoTokenToUser(string token, IConfiguration configuration){
             var tokenHandler = new JwtSecurityTokenHandler();
             var key = Encoding.UTF8.GetBytes(configuration["Jwt:Key"]);
             var validationParameters = new TokenValidationParameters
@@ -41,14 +41,16 @@ namespace Services.Tokens{
                 if (securityToken is JwtSecurityToken jwtSecurityToken &&
                     jwtSecurityToken.Header.Alg.Equals(SecurityAlgorithms.HmacSha256, StringComparison.InvariantCultureIgnoreCase))
                 {
-                    return new JsonResult(principal.Claims.FirstOrDefault(u => u.Type == ClaimTypes.Name)?.Value);
+                    var email = principal.Claims.FirstOrDefault(u => u.Type == ClaimTypes.Name)?.Value;
+                    return email;
                 }
             }
             catch (Exception e)
             {
-                return new JsonResult(e.Message);
+                Console.WriteLine(e.Message);
+                return null;
             }
-            return new JsonResult("Deu tudo errado!");
+            return null;
         }
     }
 }
