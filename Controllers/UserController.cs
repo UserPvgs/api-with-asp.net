@@ -1,4 +1,8 @@
 using Data.ApplicationDbContext;
+using LearningCSharp.Application.Forms;
+using LearningCSharp.Application.UseCases;
+using LearningCSharp.Models.Repositories;
+using LearningCSharp.Models.Validations;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -10,12 +14,13 @@ using Services.Tokens;
 [Consumes("application/json")]
 public class UserController : ControllerBase {
     private readonly IConfiguration _configuration;
-    private readonly ApplicationDbContext _context;
+    private readonly IUserRepository _repo;
 
-    public UserController(IConfiguration configuration, ApplicationDbContext context){
+    public UserController(IConfiguration configuration, IUserRepository repo){
     _configuration = configuration;
-    _context = context;
+    _repo = repo;
     }
+    
     [HttpPost("login-user")]
     public async Task<IActionResult> LoginUser([FromBody] User user)
     {
@@ -38,27 +43,22 @@ public class UserController : ControllerBase {
         }
         return new JsonResult("Invalid user");
     }
+    
     [HttpPost("create")]
-    public async Task<IActionResult> Create([FromBody] User user){
-        if(user == null){
-            return BadRequest("Invalid request");
+    public async Task<IActionResult> Create([FromBody] CreateNewUserForm user) 
+    {
+        try 
+        {
+            await new CreateUserUseCase(_repo).Build(user).Execute();
+            return StatusCode(StatusCodes.Status201Created, new { message = "Usuario cadastrado com sucesso!" });
         }
-        if(string.IsNullOrEmpty(user.Email)){
-            return BadRequest("Email not informed");
+        catch (Exception e) when (e is DomainValidationException || e is ArgumentException) 
+        {
+            return BadRequest(new { message = e.Message });
         }
-        if(string.IsNullOrEmpty(user.Password)){
-            return BadRequest("Password not informed");
+        catch (Exception e) 
+        {
+            return StatusCode(StatusCodes.Status500InternalServerError, new { message = e.Message });
         }
-        if(string.IsNullOrEmpty(user.Name)){
-            return BadRequest("Name not informed");
-        }
-        var cryptoServiceApi = new CryptoServiceApi();
-        user.Password = cryptoServiceApi.Encrypt(user.Password);
-        _context.Add(user);
-        var userCreated = await _context.SaveChangesAsync();
-        if(userCreated > 0){
-            return new JsonResult(true);
-        }
-        return BadRequest("User not created");
     }
 }
