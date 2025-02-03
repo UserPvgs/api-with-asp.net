@@ -21,7 +21,7 @@ namespace Services.Tokens{
             var token = tokenHandler.CreateToken(descriptToken);
             return tokenHandler.WriteToken(token);
         }
-        public string getInfoTokenToUser(string token, IConfiguration configuration){
+        public string getInfoTokenToUser(string token, string jwtKey){
             var tokenHandler = new JwtSecurityTokenHandler();
             var key = Encoding.UTF8.GetBytes(configuration["Jwt:Key"]);
             var validationParameters = new TokenValidationParameters

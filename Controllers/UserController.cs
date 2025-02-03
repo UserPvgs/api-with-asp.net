@@ -15,10 +15,12 @@ using Services.Tokens;
 public class UserController : ControllerBase {
     private readonly IConfiguration _configuration;
     private readonly IUserRepository _repo;
+    private readonly ILogger<UserController> _logger;
 
-    public UserController(IConfiguration configuration, IUserRepository repo){
-    _configuration = configuration;
-    _repo = repo;
+    public UserController(IConfiguration configuration, IUserRepository repo, ILogger<UserController> logger){
+        _configuration = configuration;
+        _repo = repo;
+        _logger = logger;
     }
     
     [HttpPost("login-user")]

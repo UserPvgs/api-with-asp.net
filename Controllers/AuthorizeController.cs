@@ -42,7 +42,7 @@ public class AuthorizeController {
         }
         var tokenServiceApi = new TokenServiceApi();
         var token = Authorization.Split(' ')[1];
-        var tokenInfoUser = tokenServiceApi.getInfoTokenToUser(token, _configuration);
+        var tokenInfoUser = tokenServiceApi.getInfoTokenToUser(token, _configuration["JwtKey"]);
         if(tokenInfoUser == null){
             return new JsonResult("Invalid token");
         }
