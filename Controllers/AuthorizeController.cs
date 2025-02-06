@@ -1,5 +1,4 @@
-using System.Net;
-using Data.ApplicationDbContext;
+using Data;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -10,7 +9,7 @@ using Services.Tokens;
 [Route("api/[controller]")]
 [Consumes("application/json")]
 [Authorize]
-public class AuthorizeController {
+public class AuthorizeController : ControllerBase{
     private readonly ApplicationDbContext _context;
     private readonly IConfiguration _configuration;
     public AuthorizeController(ApplicationDbContext context, IConfiguration configuration){
@@ -27,19 +26,7 @@ public class AuthorizeController {
         return new JsonResult("Error Authorization");
     }
     [HttpPut("update-user")]
-    public async Task<IActionResult> Update([FromBody] User user, [FromHeader(Name = "Authorization")] string Authorization){
-        if(user == null){
-            return new JsonResult("Invalid request");
-        }
-        if(string.IsNullOrEmpty(user.Email)){
-            return new JsonResult("Invalid email");
-        }
-        if(string.IsNullOrEmpty(user.Password)){
-            return new JsonResult("Invalid password");
-        }
-        if(string.IsNullOrEmpty(user.Name)){
-            return new JsonResult("Invalid name");
-        }
+    public async Task<IActionResult> Update<BaseModel>([FromBody] User user, [FromHeader(Name = "Authorization")] string Authorization) where BaseModel : User{
         var tokenServiceApi = new TokenServiceApi();
         var token = Authorization.Split(' ')[1];
         var tokenInfoUser = tokenServiceApi.getInfoTokenToUser(token, _configuration);
