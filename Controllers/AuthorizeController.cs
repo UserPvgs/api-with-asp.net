@@ -1,19 +1,19 @@
-using Data;
+using System.ComponentModel.DataAnnotations;
+using Application.UseCases;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using Services.Cypher;
+using Models.Repositories;
 using Services.Tokens;
 
 [ApiController]
 [Route("api/[controller]")]
 [Consumes("application/json")]
 [Authorize]
-public class AuthorizeController : ControllerBase{
-    private readonly ApplicationDbContext _context;
+public class AuthorizeController : ControllerBase {
+    private readonly IUserRepository _repo;
     private readonly IConfiguration _configuration;
-    public AuthorizeController(ApplicationDbContext context, IConfiguration configuration){
-        _context = context;
+    public AuthorizeController(IUserRepository repo, IConfiguration configuration){
+        _repo = repo;
         _configuration = configuration;
     }
     [HttpGet("info-user")]
@@ -25,25 +25,15 @@ public class AuthorizeController : ControllerBase{
         }
         return new JsonResult("Error Authorization");
     }
-    [HttpPut("update-user")]
-    public async Task<IActionResult> Update<BaseModel>([FromBody] User user, [FromHeader(Name = "Authorization")] string Authorization) where BaseModel : User{
-        var tokenServiceApi = new TokenServiceApi();
-        var token = Authorization.Split(' ')[1];
-        var tokenInfoUser = tokenServiceApi.getInfoTokenToUser(token, _configuration);
-        if(tokenInfoUser == null){
-            return new JsonResult("Invalid token");
+    [HttpPost]
+    public async Task<IActionResult> Update([FromBody] UpdateUserForm user, [FromHeader(Name = "Authorization")] string Authorization){
+        try{
+            await new UpdateUserUseCase(_repo ,_configuration).Build(user, Authorization).Execute();
+            return StatusCode(StatusCodes.Status200OK, new{message="user changed successfully."});
+        }catch(Exception e) when (e is DomainvalidationException || e is ValidationException){
+            return BadRequest(e.Message);
+        }catch(Exception e){
+            return StatusCode(StatusCodes.Status500InternalServerError, new {error=e.Message});
         }
-        var courseToUpdate = await _context.Users.FirstOrDefaultAsync(u => u.Email == tokenInfoUser);
-        if(courseToUpdate != null){
-            var cryptoServiceApi = new CryptoServiceApi();
-            user.Password = cryptoServiceApi.Encrypt(user.Password);
-            courseToUpdate.Email = user.Email;
-            courseToUpdate.Password = user.Password;
-            courseToUpdate.Name = user.Name;
-            _context.Users.Update(courseToUpdate);
-            await _context.SaveChangesAsync();
-            return new JsonResult(true);
-        }
-        return new JsonResult("User not att");
     }
 }

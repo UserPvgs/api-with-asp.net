@@ -1,5 +1,5 @@
 using Application.Forms;
-using Data.Repositories.UserRepository;
+using Data.Repositories;
 using Models.Repositories;
 using Services.Cypher;
 using Services.Tokens;
