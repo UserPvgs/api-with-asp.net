@@ -14,6 +14,8 @@ public class User{
         Password = password;
     }
     public User(int id, string name, string email, string password) {
+        DomainValidation.When(string.IsNullOrEmpty(email), "O campo email é obrigatório");
+        DomainValidation.When(string.IsNullOrEmpty(password), "O campo Password é obrigatório");
         Id = id;
         Name = name;
         Email = email;
