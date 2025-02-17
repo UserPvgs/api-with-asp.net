@@ -34,7 +34,7 @@ public class SmtpQueuBackgroundService : BackgroundService {
                 }
                 foreach(QueueTask task in queue){
                     var infoSmtp = JsonSerializer.Deserialize<EmailInfo>(task.PayLoad);
-                    await new SmtpService(new MailAddress("testesmtpservice@gmail.com"), new MailAddress(infoSmtp.to), _configuration).Build().Execute();
+                    await new SmtpService(new MailAddress(_configuration["Smtp:From"]), new MailAddress(infoSmtp.to), _configuration).Build(infoSmtp.subject, infoSmtp.body).Execute();
                     task.Status = "Completed";
                     await _repo.UpdateQueueAsync(task);
                     Console.WriteLine("E-mail enviado e status atualizado");

@@ -18,4 +18,8 @@ public class QueueRepository : IQueueTaskRepository {
         _context.QueueTasks.Update(queue);
         await _context.SaveChangesAsync();
     }
+    public async Task CreateQueueAsync(QueueTask queue){
+        await _context.AddAsync(queue);
+        await _context.SaveChangesAsync();
+    }
 }

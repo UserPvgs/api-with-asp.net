@@ -1,17 +1,19 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Models.Repositories;
 [ApiController]
 [Route("api/[controller]")]
+[Consumes("application/json")]
 public class SmtpController : ControllerBase {
-    private readonly IConfiguration _configuration;
+    private readonly IQueueTaskRepository _repo;
 
-    public SmtpController(IConfiguration configuration){
-        _configuration = configuration;
+    public SmtpController(IQueueTaskRepository repo){
+        _repo = repo;
     }
     [HttpPost]
-    public async Task<IActionResult> SendSmtp(){
+    public async Task<IActionResult> SendSmtp(CreateNewQueueForm queueForm){
         try{
-            await new SmtpUseCase(_configuration).Build().Execute();
+            await new SmtpUseCase(_repo).Build(queueForm).Execute();
             return StatusCode(StatusCodes.Status200OK, new {message="E-mail enviado"});
         }catch(Exception e) when(e is DomainvalidationException || e is ArgumentException){
             return BadRequest(e.Message);
